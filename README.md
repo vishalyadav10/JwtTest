@@ -1,2 +1,2 @@
-# WingsT4
-wings T4 springBoot with JWT authentication and authorization
+# JwtExample
+Crud app with JWT authentication and authorisation
