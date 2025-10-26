@@ -1,8 +1,6 @@
 package com.amazonclone.test.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,70 +8,66 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
-
 
 @Service
 public class JwtUtil {
+
     @Value("${security.jwt.secret-key}")
     private String SECRET_KEY;
 
     @Value("${security.jwt.expiration}")
-    private long EXPIRATION;
+    private long EXPIRATION; // e.g., 86400000 (1 day)
 
-    public String extractUsername(String jwtToken){
-        return extractClaims(jwtToken, Claims::getSubject);
+    private Key getSignKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
     }
 
-    public Date extractExpiration(String jwtToken){
-        return extractClaims(jwtToken, Claims::getExpiration);
-    }
-
-
-    private <T> T extractClaims(String jwtToken, Function<Claims, T> claimResolver){
-        final Claims claims = extractAllClaims(jwtToken);
-        return claimResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String jwtToken) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getKey())
-                .build()
-                .parseClaimsJws(jwtToken)
-                .getBody();
-    }
-
-    private Key getKey() {
-        byte[] bytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(bytes);
-    }
-
-    public String generateToken(UserDetails userDetails){
+    // ✅ Generate token and add role
+    public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(userDetails,claims);
+        claims.put("role", userDetails.getAuthorities()); // Add role/authorities to token
+        return createToken(claims, userDetails.getUsername());
     }
 
-    private String createToken(UserDetails userDetails, Map<String, Object> claims) {
-        Calendar calendar = Calendar.getInstance();
+    private String createToken(Map<String, Object> claims, String username) {
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(calendar.getTime())
-                .setExpiration(new Date(calendar.getTimeInMillis() + EXPIRATION))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public boolean validateToken(String jwtToken, UserDetails userDetails){
-        return (userDetails.getUsername().equals(extractUsername(jwtToken))) && !isTokenExpired(jwtToken);
+    // ✅ Extract username
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
     }
 
-    public boolean isTokenExpired(String jwtToken){
-        return extractExpiration(jwtToken).before(new Date());
+    // ✅ Extract role
+    public String extractRole(String token) {
+        Object role = extractAllClaims(token).get("role");
+        return role != null ? role.toString() : null;
     }
 
+    // ✅ Validate token
+    public boolean validateToken(String token, UserDetails userDetails) {
+        return userDetails.getUsername().equals(extractUsername(token)) && !isExpired(token);
+    }
+
+    // ✅ Common helpers
+    private boolean isExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 }

@@ -17,6 +17,6 @@ public class Product {
     private String description; 
     private Double price; 
     private Integer stock;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     private Category category;
 }
