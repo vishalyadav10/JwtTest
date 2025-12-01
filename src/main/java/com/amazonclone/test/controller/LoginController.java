@@ -25,7 +25,6 @@ public class LoginController {
     @PostMapping("/public/login")
     public JwtResponse createAuthenticationToken(@RequestBody JwtRequest jwtRequest) throws Exception {
         try {
-            System.out.print("inside createAuthenticationToken");
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             jwtRequest.getUsername(),
@@ -35,7 +34,7 @@ public class LoginController {
         } catch (AuthenticationException e) {
             throw new Exception("Incorrect username or password", e);
         }
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(jwtRequest.getUsername());
+         UserDetails userDetails = userDetailsService.loadUserByUsername(jwtRequest.getUsername());
 
         // Generate token using UserDetails
         final String jwt = jwtService.generateToken(userDetails);

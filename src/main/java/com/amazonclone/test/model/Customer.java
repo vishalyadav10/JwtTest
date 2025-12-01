@@ -33,7 +33,7 @@ public class Customer  implements UserDetails{
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        return List.of(new SimpleGrantedAuthority(role.toUpperCase()));
 
     }
 

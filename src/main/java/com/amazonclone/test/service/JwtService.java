@@ -62,9 +62,10 @@ public class JwtService {
 
     // ✅ Common helpers
     private boolean isExpired(String token) {
+
         return extractAllClaims(token).getExpiration().before(new Date());
     }
-
+// for Jwt 0.12 and spring 3.5
     private Claims extractAllClaims(String token) {
           return Jwts.parser()
                 .verifyWith(getSignKey())   // verify with your SecretKey
@@ -72,4 +73,11 @@ public class JwtService {
                 .parseSignedClaims(token)   // returns Jwt<Header, Claims>
                 .getPayload();
     }
+//private Claims extractAllClaims(String token) {
+//          return Jwts.parserBuilder()
+//                  .setSigningKey(getSignKey())   // set key
+//                  .build()                       // build parser
+//                  .parseClaimsJws(token)         // parse signed JWT
+//                  .getBody();                    // get claims
+//    }
 }
