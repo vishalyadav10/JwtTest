@@ -65,11 +65,20 @@ public class JwtService {
         return extractAllClaims(token).getExpiration().before(new Date());
     }
 
-    private Claims extractAllClaims(String token) {
-          return Jwts.parser()
-                .verifyWith(getSignKey())   // verify with your SecretKey
-                .build()
-                .parseSignedClaims(token)   // returns Jwt<Header, Claims>
-                .getPayload();
+
+ // for Jwt 0.12 and spring 3.5
+//    private Claims extractAllClaims(String token) {
+//        return Jwts.parser()
+//                .verifyWith(getSignKey())   // verify with your SecretKey
+//                .build()
+//                .parseSignedClaims(token)   // returns Jwt<Header, Claims>
+//                .getPayload();
+//    }
+private Claims extractAllClaims(String token) {
+          return Jwts.parserBuilder()
+                  .setSigningKey(getSignKey())   // set key
+                  .build()                       // build parser
+                  .parseClaimsJws(token)         // parse signed JWT
+                  .getBody();                    // get claims
     }
 }
