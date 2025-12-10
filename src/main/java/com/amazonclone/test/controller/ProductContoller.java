@@ -13,6 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductContoller {
     ProductService productService;
+    //add one of search by keyword
+    //AuthenticationPrincipal
     @GetMapping("/user/product")
     public ResponseEntity<List<Product>> getProductList() {
         List<Product> products =  productService.getProductRepo();

@@ -24,14 +24,15 @@ public class JwtService {
     private long EXPIRATION; // e.g., 86400000 (1 day)
 
     private SecretKey getSignKey() {
+
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
     }
 
     // ✅ Generate token and add role
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(String userName) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", userDetails.getAuthorities()); // Add role/authorities to token
-        return createToken(claims, userDetails.getUsername());
+     //   claims.put("role", userDetails.getAuthorities()); // Add role/authorities to token
+        return createToken(claims,userName);
     }
 
     private String createToken(Map<String, Object> claims, String username) {
@@ -43,7 +44,21 @@ public class JwtService {
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-
+    // for Jwt 0.12 and spring 3.5
+//    private Claims extractAllClaims(String token) {
+//        return Jwts.parser()
+//                .verifyWith(getSignKey())   // verify with your SecretKey
+//                .build()
+//                .parseSignedClaims(token)   // returns Jwt<Header, Claims>
+//                .getPayload();
+//    }
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSignKey())   // set key
+                .build()                       // build parser
+                .parseClaimsJws(token)         // parse signed JWT
+                .getBody();                    // get claims
+    }
     // ✅ Extract username
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
@@ -62,23 +77,7 @@ public class JwtService {
 
     // ✅ Common helpers
     private boolean isExpired(String token) {
+
         return extractAllClaims(token).getExpiration().before(new Date());
-    }
-
-
- // for Jwt 0.12 and spring 3.5
-//    private Claims extractAllClaims(String token) {
-//        return Jwts.parser()
-//                .verifyWith(getSignKey())   // verify with your SecretKey
-//                .build()
-//                .parseSignedClaims(token)   // returns Jwt<Header, Claims>
-//                .getPayload();
-//    }
-private Claims extractAllClaims(String token) {
-          return Jwts.parserBuilder()
-                  .setSigningKey(getSignKey())   // set key
-                  .build()                       // build parser
-                  .parseClaimsJws(token)         // parse signed JWT
-                  .getBody();                    // get claims
     }
 }

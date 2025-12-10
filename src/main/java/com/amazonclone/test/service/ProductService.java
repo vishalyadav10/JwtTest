@@ -21,8 +21,8 @@ public class ProductService {
         return productRepo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     }
     public Product addProduct(Product product) {
-        String categoryName = product.getCategory().getName();
-        Category category = categoryRepo.findByName(categoryName)
+        Long categoryId = product.getCategory().getId();
+        Category category = categoryRepo.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         product.setCategory(category);
         productRepo.save(product);

@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Customer  implements UserDetails{
-     @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -29,12 +29,11 @@ public class Customer  implements UserDetails{
 
     private String email;
 
-    private String role ;
+    private Role role ;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
-
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
 	@Override
