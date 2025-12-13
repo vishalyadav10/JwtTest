@@ -1,23 +1,23 @@
 package com.amazonclone.test.config;
 
+import com.amazonclone.test.model.Customer;
 import com.amazonclone.test.repository.CustomerRepo;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
-@RequiredArgsConstructor
+@Component
 public class CustomUserDetailsService implements UserDetailsService {
-    private final CustomerRepo customerRepo;
+    @Autowired
+    private  CustomerRepo customerRepo;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("loadUserByUsername called with: " + username);
-        return customerRepo.findByUsername(username)
+       Customer customer= customerRepo.findByUsername(username)
     .orElseThrow(() -> new UsernameNotFoundException(username));
-
+       return  new CustomerDetails(customer);
     }
 }
 

@@ -9,7 +9,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +19,6 @@ public class LoginController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService; // add this
 
 
     @PostMapping("/public/login")
@@ -36,13 +34,15 @@ public class LoginController {
             );
            if(authentication.isAuthenticated()) {
                 String jwt = jwtService.generateToken(jwtRequest.getUsername());
-               return ResponseEntity.ok(new JwtResponse(jwt));
+                JwtResponse jwtResponse = new JwtResponse(jwt,200);
+               return ResponseEntity.status(200).body(jwtResponse);
            }
         } catch (AuthenticationException e) {
             e.printStackTrace(); // see BadCredentials vs UsernameNotFound
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body(new JwtResponse(null,400));
          //   throw new Exception("Incorrect username or password", e);
         }
-        return ResponseEntity.status(401).build();
+        return ResponseEntity.status(401).body(new JwtResponse(null,400));
+
     }
 }
